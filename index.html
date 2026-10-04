@@ -82,6 +82,8 @@ a{color:var(--acc)}
       <button class="go" id="runKw">Check</button>
     </div>
     <div class="status" id="kwStatus"></div>
+    <label class="t" style="margin-top:8px">Ideas to try (tap one)</label>
+    <div class="chips" id="ideas"></div>
   </div>
   <div class="card" id="kwResult" hidden>
     <label class="t">Opportunity by country</label>
@@ -132,6 +134,23 @@ document.querySelectorAll('[data-chart]').forEach(b=>b.onclick=()=>{
   document.querySelectorAll('[data-chart]').forEach(x=>x.setAttribute('aria-pressed',x===b));
 });
 async function getJSON(u){const r=await fetch(u);if(!r.ok)throw new Error(r.status);return r.json()}
+const errs=[];
+function fromLegacy(d){return (d.feed.entry||[]).map(e=>({id:e.id.attributes['im:id'],name:e['im:name'].label,artistName:e['im:artist'].label,genres:[{name:e.category.attributes.label}],url:(e.id.label||'')}))}
+async function getChart(cc){
+  const l=cc.toLowerCase(), kind=chart==='top-paid'?'toppaidapplications':'topfreeapplications';
+  const legacy=`https://itunes.apple.com/${l}/rss/${kind}/limit=50/json`;
+  const modern=`https://rss.applemarketingtools.com/api/v2/${l}/apps/${chart}/50/apps.json`;
+  const tries=[
+    async()=>fromLegacy(await getJSON(legacy)),
+    async()=>(await getJSON(modern)).feed.results,
+    async()=>fromLegacy(await getJSON('https://api.allorigins.win/raw?url='+encodeURIComponent(legacy))),
+    async()=>(await getJSON('https://api.allorigins.win/raw?url='+encodeURIComponent(modern))).feed.results
+  ];
+  for(let i=0;i<tries.length;i++){
+    try{const r=await tries[i]();if(r&&r.length)return r}catch(e){errs.push(cc+' route '+(i+1)+': '+e.message)}
+  }
+  throw new Error('all routes failed');
+}
 const STOP=new Set('the and for app apps with your you pro lite free plus new best all one my to of in on by a an is it at from this that go get now online mobile'.split(' '));
 
 $('loadTrends').onclick=async()=>{
@@ -140,9 +159,9 @@ $('loadTrends').onclick=async()=>{
   const apps=new Map(), words=new Map();let ok=0;
   await Promise.all(cs.map(async cc=>{
     try{
-      const d=await getJSON(`https://rss.applemarketingtools.com/api/v2/${cc.toLowerCase()}/apps/${chart}/50/apps.json`);
+      const list=await getChart(cc);
       ok++;
-      d.feed.results.forEach((a,i)=>{
+      list.forEach((a,i)=>{
         const e=apps.get(a.id)||{id:a.id,name:a.name,artist:a.artistName,genre:(a.genres&&a.genres[0]&&a.genres[0].name)||'',url:a.url,pts:0,ranks:{}};
         e.pts+=51-(i+1);e.ranks[cc]=i+1;apps.set(a.id,e);
         const seen=new Set();
@@ -153,7 +172,8 @@ $('loadTrends').onclick=async()=>{
       });
     }catch(e){}
   }));
-  st.textContent=ok?`Loaded ${ok} of ${cs.length} countries.`:'Could not reach the App Store feed. Check your connection and that you opened this file in a browser.';
+  st.textContent=ok?`Loaded ${ok} of ${cs.length} countries.`:'Could not load the charts. Details: '+(errs.slice(-3).join(' | ')||'unknown');
+  errs.length=0;
   if(!ok)return;
   const wl=[...words.values()].filter(x=>x.n>1).sort((a,b)=>b.pts-a.pts).slice(0,25);
   const mx=wl[0]?wl[0].pts:1;
@@ -200,6 +220,8 @@ $('runKw').onclick=async()=>{
     `<tr><td class="wrap"><a href="${esc(x.u)}" target="_blank" rel="noopener">${esc(x.n)}</a><div class="note">${esc(x.a)}</div></td><td>${x.rc.toLocaleString()}</td><td>${x.rt.toFixed(1)}</td><td>${x.cs.length}</td></tr>`).join('');
   $('kwApps').hidden=false;
 };
+const IDEAS=['prayer times','quran','kids learning','learn arabic','budget tracker','habit tracker','fasting timer','meal planner','pdf scanner','qr code','photo editor','ai chat','study planner','expense split','workout log','invoice maker','translator','kids coloring','math games','sleep sounds'];
+IDEAS.forEach(w=>{const b=document.createElement('button');b.className='chip';b.textContent=w;b.onclick=()=>{$('kwInput').value=w;$('runKw').click()};$('ideas').appendChild(b)});
 $('kwInput').addEventListener('keydown',e=>{if(e.key==='Enter')$('runKw').click()});
 $('playLink').onclick=()=>{
   const q=$('kwInput').value.trim()||'apps';
