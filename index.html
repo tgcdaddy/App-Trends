@@ -5,101 +5,139 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>App Trend Radar</title>
 <style>
-:root{--bg:#f6f7f9;--card:#fff;--fg:#14181f;--mut:#667085;--line:#e3e6eb;--acc:#0a7d6e;--acc2:#e8f5f2;--bad:#c2410c;--good:#15803d}
-@media (prefers-color-scheme:dark){:root{--bg:#0e1217;--card:#161c24;--fg:#e8ecf2;--mut:#93a0b2;--line:#27303b;--acc:#2dd4bf;--acc2:#123430;--bad:#fb923c;--good:#4ade80;color-scheme:dark}}
+/* Layout: one vertical workflow. Pick market, find idea, test it, copy the build prompt. */
+:root{--bg:#f4f5f2;--card:#fff;--fg:#161a17;--mut:#667068;--line:#e1e4de;--acc:#0b6e5f;--acc-fg:#fff;--soft:#e6f2ee;
+--go:#157a3c;--go-bg:#e2f4e8;--maybe:#9a6700;--maybe-bg:#fbf0d4;--stop:#b42318;--stop-bg:#fde8e6}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0d1210;--card:#151c19;--fg:#e9eeea;--mut:#92a099;--line:#26312c;--acc:#35d0b4;--acc-fg:#08130f;--soft:#12302a;
+--go:#5fdc8a;--go-bg:#12301d;--maybe:#f2c14e;--maybe-bg:#33290c;--stop:#ff8a7d;--stop-bg:#3a1713;color-scheme:dark}}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;padding:16px;padding-block:20px 60px;max-width:900px;margin-inline:auto}
-h1{font-size:22px;margin:0 0 2px}
-.sub{color:var(--mut);margin:0 0 16px;font-size:13px}
-.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px;margin-bottom:12px}
-label.t{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--mut);display:block;margin-bottom:6px}
+body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;padding:16px;padding-block:20px 70px;max-width:760px;margin-inline:auto}
+h1{font-size:24px;margin:0 0 4px;letter-spacing:-.01em;text-wrap:balance}
+h2{font-size:17px;margin:0 0 4px}
+.sub{color:var(--mut);margin:0 0 14px;font-size:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px;margin-bottom:12px;min-width:0}
+.t{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--mut);display:block;margin-bottom:6px}
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-bottom:12px}
+.steps div{background:var(--soft);border-radius:8px;padding:10px;font-size:13px}
+.steps b{display:block;color:var(--acc);margin-bottom:2px}
 .chips{display:flex;flex-wrap:wrap;gap:6px}
 .chip{border:1px solid var(--line);background:var(--bg);color:var(--fg);border-radius:999px;padding:6px 12px;font-size:13px;cursor:pointer;font-family:inherit}
-.chip[aria-pressed=true]{background:var(--acc);border-color:var(--acc);color:var(--bg);font-weight:600}
-.grp{margin-bottom:10px}
-.row{display:flex;gap:8px;flex-wrap:wrap}
-input[type=text]{flex:1;min-width:0;padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--fg);font:inherit}
-button.go{padding:10px 16px;border:0;border-radius:8px;background:var(--acc);color:var(--bg);font:inherit;font-weight:600;cursor:pointer}
-button.go.alt{background:transparent;color:var(--acc);border:1px solid var(--acc)}
-button:focus-visible,input:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
-.tabs{display:flex;gap:6px;margin-bottom:12px}
-.tabs .chip{flex:1;text-align:center}
+.chip[aria-pressed=true]{background:var(--acc);border-color:var(--acc);color:var(--acc-fg);font-weight:600}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+input[type=text],select,textarea{padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--fg);font:inherit;min-width:0}
+input[type=text]{flex:1}
+textarea{width:100%;min-height:210px;font:13px/1.45 ui-monospace,Menlo,monospace;resize:vertical}
+button.go{padding:10px 16px;border:0;border-radius:8px;background:var(--acc);color:var(--acc-fg);font:inherit;font-weight:600;cursor:pointer}
+button.alt{padding:9px 14px;border-radius:8px;background:transparent;color:var(--acc);border:1px solid var(--acc);font:inherit;font-weight:600;cursor:pointer}
+a.alt{display:inline-block;text-decoration:none}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,a:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
 .scroll{overflow-x:auto}
 table{border-collapse:collapse;width:100%;font-size:13px;font-variant-numeric:tabular-nums}
 th,td{text-align:left;padding:8px 6px;border-bottom:1px solid var(--line);white-space:nowrap}
 td.wrap{white-space:normal;min-width:140px}
 th{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--mut)}
-.bar{height:6px;border-radius:3px;background:var(--line);min-width:60px}
-.bar i{display:block;height:100%;border-radius:3px;background:var(--acc)}
-.pill{display:inline-block;padding:2px 8px;border-radius:999px;font-size:12px;font-weight:600}
-.hi{background:var(--acc2);color:var(--good)}.lo{background:var(--acc2);color:var(--bad)}
 .note{font-size:12px;color:var(--mut)}
 .status{font-size:13px;color:var(--mut);min-height:20px;margin:6px 0}
 a{color:var(--acc)}
+.verdict{border-radius:10px;padding:14px;margin-bottom:12px}
+.verdict.go{background:var(--go-bg);color:var(--go)}.verdict.maybe{background:var(--maybe-bg);color:var(--maybe)}.verdict.stop{background:var(--stop-bg);color:var(--stop)}
+.verdict .big{font-size:22px;font-weight:700;line-height:1.2}
+.verdict .sc{float:right;font-size:28px;font-weight:700;font-variant-numeric:tabular-nums}
+.verdict ul{margin:8px 0 0;padding-inline-start:18px;color:var(--fg);font-size:14px}
+.bar{height:6px;border-radius:3px;background:var(--line);min-width:60px}.bar i{display:block;height:100%;border-radius:3px;background:var(--acc)}
+.sl{display:flex;gap:8px;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line);padding:8px 0;flex-wrap:wrap}
+.sl:last-child{border-bottom:0}
+.pill{display:inline-block;padding:1px 8px;border-radius:999px;font-size:12px;font-weight:700}
+.pill.go{background:var(--go-bg);color:var(--go)}.pill.maybe{background:var(--maybe-bg);color:var(--maybe)}.pill.stop{background:var(--stop-bg);color:var(--stop)}
 </style>
 </head>
 <body>
 <h1>App Trend Radar</h1>
-<p class="sub">Find what people are downloading and searching for on iPhone, by region. Live data from the App Store.</p>
+<p class="sub">Find an app idea people already want, check how hard the competition is, then hand Claude a ready prompt to build it.</p>
+
+<div class="steps">
+  <div><b>1. Pick your market</b>Where will your users be?</div>
+  <div><b>2. Find an idea</b>See what is hot, or test your own.</div>
+  <div><b>3. Read the verdict</b>Build, maybe, or too crowded.</div>
+  <div><b>4. Build with Claude</b>Copy the prompt and start.</div>
+</div>
 
 <div class="card">
-  <label class="t">Regions (pick any combination)</label>
+  <span class="t">1. Market (pick any combination)</span>
   <div class="chips" id="regions"></div>
   <div class="note" id="countryList" style="margin-top:8px"></div>
 </div>
 
-<div class="tabs" id="tabs">
-  <button class="chip" data-tab="trends" aria-pressed="true">Trending now</button>
-  <button class="chip" data-tab="kw" aria-pressed="false">Keyword check</button>
+<div class="card">
+  <span class="t">2. Find an idea</span>
+  <div class="row">
+    <input type="text" id="kwInput" placeholder="Type an app idea, e.g. prayer times" autocomplete="off">
+    <button class="go" id="runKw">Test idea</button>
+  </div>
+  <div class="status" id="kwStatus"></div>
+  <span class="t">No idea yet? Tap one</span>
+  <div class="chips" id="ideas"></div>
+  <hr style="border:0;border-top:1px solid var(--line);margin:14px 0">
+  <span class="t">Or see what is hot right now</span>
+  <div class="row">
+    <button class="chip" data-chart="top-free" aria-pressed="true">Top free</button>
+    <button class="chip" data-chart="top-paid" aria-pressed="false">Top paid</button>
+    <button class="alt" id="loadTrends">Load hot apps</button>
+  </div>
+  <div class="status" id="trendStatus"></div>
+  <div id="hotBox" hidden>
+    <span class="t">Hot categories</span>
+    <div class="chips" id="genres" style="margin-bottom:12px"></div>
+    <span class="t">Hot keywords in app names (tap to test)</span>
+    <div class="chips" id="hotWords"></div>
+    <details style="margin-top:12px"><summary class="note">Show the top apps behind this</summary>
+      <div class="scroll"><table id="appsTable"></table></div>
+    </details>
+  </div>
 </div>
 
-<section id="trends">
+<div id="resultBox" hidden>
+  <div class="verdict" id="verdict"></div>
   <div class="card">
-    <label class="t">Chart</label>
-    <div class="row">
-      <button class="chip" data-chart="top-free" aria-pressed="true">Top free</button>
-      <button class="chip" data-chart="top-paid" aria-pressed="false">Top paid</button>
-      <button class="go" id="loadTrends" style="margin-inline-start:auto">Load trends</button>
-    </div>
-    <div class="status" id="trendStatus"></div>
-  </div>
-  <div class="card" id="kwCloud" hidden>
-    <label class="t">Rising keywords in app names and titles</label>
-    <div class="scroll"><table id="kwTable"></table></div>
-    <p class="note">Words that appear in the names of many top apps across your chosen countries. Tap a word to check its competition.</p>
-  </div>
-  <div class="card" id="appsCard" hidden>
-    <label class="t">Top apps across selected countries</label>
-    <div class="scroll"><table id="appsTable"></table></div>
-  </div>
-</section>
-
-<section id="kw" hidden>
-  <div class="card">
-    <label class="t">Keyword or app idea</label>
-    <div class="row">
-      <input type="text" id="kwInput" placeholder="e.g. prayer times, kids learning arabic, budget planner" autocomplete="off">
-      <button class="go" id="runKw">Check</button>
-    </div>
-    <div class="status" id="kwStatus"></div>
-    <label class="t" style="margin-top:8px">Ideas to try (tap one)</label>
-    <div class="chips" id="ideas"></div>
-  </div>
-  <div class="card" id="kwResult" hidden>
-    <label class="t">Opportunity by country</label>
+    <span class="t">By country</span>
     <div class="scroll"><table id="kwRes"></table></div>
-    <p class="note">Opportunity is higher when the top results have few ratings, which means less competition. Ratings are used as a stand-in for downloads because Apple does not publish download counts.</p>
   </div>
-  <div class="card" id="kwApps" hidden>
-    <label class="t">Top results for this keyword</label>
+  <div class="card">
+    <span class="t">Apps you would compete with</span>
     <div class="scroll"><table id="kwAppsT"></table></div>
+    <p class="note">Low stars or old updates mean users are not well served. That is your opening.</p>
   </div>
-</section>
+  <div class="row" style="margin-bottom:12px">
+    <button class="go" id="toPrompt">4. Make the build prompt</button>
+    <button class="alt" id="saveIdea">Save to shortlist</button>
+    <a class="alt" id="playLink" target="_blank" rel="noopener">Check Google Play</a>
+  </div>
+</div>
+
+<div class="card" id="promptBox" hidden>
+  <span class="t">4. Build prompt for Claude</span>
+  <div class="row" style="margin-bottom:8px">
+    <input type="text" id="appName" placeholder="App name" style="min-width:140px">
+    <select id="lang"><option value="en">English UI</option><option value="ar">Arabic UI (RTL)</option><option value="both">Arabic + English</option></select>
+    <select id="money"><option value="ads">Free with ads</option><option value="paid">One-time paid</option><option value="sub">Subscription</option></select>
+  </div>
+  <textarea id="promptText" readonly></textarea>
+  <div class="row" style="margin-top:8px">
+    <button class="go" id="copyPrompt">Copy prompt</button>
+    <a class="alt" id="openClaude" target="_blank" rel="noopener">Open in Claude</a>
+  </div>
+  <div class="status" id="copyStatus"></div>
+</div>
 
 <div class="card">
-  <label class="t">Android / Google Play</label>
-  <p class="note" style="margin:0 0 8px">Google Play has no public data feed, so live Android numbers cannot be pulled from a browser tool. Use these links to check the same keyword and country on Play.</p>
-  <div class="row"><button class="go alt" id="playLink">Open Google Play search</button><button class="go alt" id="csvBtn">Export CSV</button></div>
+  <span class="t">Shortlist</span>
+  <div id="shortlist"></div>
+  <div class="row" style="margin-top:8px"><button class="alt" id="csvBtn">Export shortlist CSV</button></div>
+</div>
+
+<div class="card">
+  <span class="t">About Android</span>
+  <p class="note" style="margin:0">Google Play has no public data feed, so live Android numbers cannot be pulled here. Use the Check Google Play button after a test to see the same keyword on Play. An idea that is weak on iPhone is usually weak on Android too.</p>
 </div>
 
 <script>
@@ -108,31 +146,28 @@ const REGIONS={
  'America':{US:'United States',CA:'Canada',MX:'Mexico',BR:'Brazil'},
  'Europe':{GB:'United Kingdom',DE:'Germany',FR:'France',ES:'Spain',IT:'Italy',NL:'Netherlands'}
 };
-const sel=new Set(['Middle East']);
-let chart='top-free', lastRows=[], lastKind='';
+const IDEAS=['prayer times','quran memorize','kids learning','learn arabic','budget tracker','habit tracker','fasting timer','meal planner','pdf scanner','qr code','study planner','expense split','workout log','invoice maker','kids coloring','math games','sleep sounds','voice notes'];
 const $=id=>document.getElementById(id);
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const store={get(k,d){try{const v=JSON.parse(localStorage.getItem(k));return v==null?d:v}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+const sel=new Set(store.get('regions',['Middle East']));
+let chart='top-free', cur=null, shortlist=store.get('shortlist',[]);
+
 function countries(){const o=[];for(const r of sel)for(const c of Object.keys(REGIONS[r]))o.push(c);return o}
-function name(c){for(const r in REGIONS)if(REGIONS[r][c])return REGIONS[r][c];return c}
+function cname(c){for(const r in REGIONS)if(REGIONS[r][c])return REGIONS[r][c];return c}
 function drawRegions(){
   const box=$('regions');box.innerHTML='';
   for(const r in REGIONS){
-    const b=document.createElement('button');b.className='chip';b.textContent=r;
-    b.setAttribute('aria-pressed',sel.has(r));
-    b.onclick=()=>{sel.has(r)?sel.delete(r):sel.add(r);if(!sel.size)sel.add(r);drawRegions()};
+    const b=document.createElement('button');b.className='chip';b.textContent=r;b.setAttribute('aria-pressed',sel.has(r));
+    b.onclick=()=>{sel.has(r)?sel.delete(r):sel.add(r);if(!sel.size)sel.add(r);store.set('regions',[...sel]);drawRegions()};
     box.appendChild(b);
   }
-  $('countryList').textContent=countries().map(name).join(', ');
+  $('countryList').textContent=countries().map(cname).join(', ');
 }
 drawRegions();
-document.querySelectorAll('#tabs .chip').forEach(b=>b.onclick=()=>{
-  document.querySelectorAll('#tabs .chip').forEach(x=>x.setAttribute('aria-pressed',x===b));
-  $('trends').hidden=b.dataset.tab!=='trends';$('kw').hidden=b.dataset.tab!=='kw';
-});
-document.querySelectorAll('[data-chart]').forEach(b=>b.onclick=()=>{
-  chart=b.dataset.chart;
-  document.querySelectorAll('[data-chart]').forEach(x=>x.setAttribute('aria-pressed',x===b));
-});
+IDEAS.forEach(w=>{const b=document.createElement('button');b.className='chip';b.textContent=w;b.onclick=()=>{$('kwInput').value=w;runTest()};$('ideas').appendChild(b)});
+document.querySelectorAll('[data-chart]').forEach(b=>b.onclick=()=>{chart=b.dataset.chart;document.querySelectorAll('[data-chart]').forEach(x=>x.setAttribute('aria-pressed',x===b))});
+
 async function getJSON(u){const r=await fetch(u);if(!r.ok)throw new Error(r.status);return r.json()}
 const errs=[];
 function fromLegacy(d){return (d.feed.entry||[]).map(e=>({id:e.id.attributes['im:id'],name:e['im:name'].label,artistName:e['im:artist'].label,genres:[{name:e.category.attributes.label}],url:(e.id.label||'')}))}
@@ -140,99 +175,158 @@ async function getChart(cc){
   const l=cc.toLowerCase(), kind=chart==='top-paid'?'toppaidapplications':'topfreeapplications';
   const legacy=`https://itunes.apple.com/${l}/rss/${kind}/limit=50/json`;
   const modern=`https://rss.applemarketingtools.com/api/v2/${l}/apps/${chart}/50/apps.json`;
-  const tries=[
-    async()=>fromLegacy(await getJSON(legacy)),
-    async()=>(await getJSON(modern)).feed.results,
-    async()=>fromLegacy(await getJSON('https://api.allorigins.win/raw?url='+encodeURIComponent(legacy))),
-    async()=>(await getJSON('https://api.allorigins.win/raw?url='+encodeURIComponent(modern))).feed.results
-  ];
-  for(let i=0;i<tries.length;i++){
-    try{const r=await tries[i]();if(r&&r.length)return r}catch(e){errs.push(cc+' route '+(i+1)+': '+e.message)}
-  }
+  const relay=u=>'https://api.allorigins.win/raw?url='+encodeURIComponent(u);
+  const tries=[async()=>fromLegacy(await getJSON(legacy)),async()=>(await getJSON(modern)).feed.results,async()=>fromLegacy(await getJSON(relay(legacy))),async()=>(await getJSON(relay(modern))).feed.results];
+  for(let i=0;i<tries.length;i++){try{const r=await tries[i]();if(r&&r.length)return r}catch(e){errs.push(cc+' route '+(i+1)+': '+e.message)}}
   throw new Error('all routes failed');
 }
 const STOP=new Set('the and for app apps with your you pro lite free plus new best all one my to of in on by a an is it at from this that go get now online mobile'.split(' '));
 
 $('loadTrends').onclick=async()=>{
-  const cs=countries(), st=$('trendStatus');
-  st.textContent='Loading '+cs.length+' countries...';
-  const apps=new Map(), words=new Map();let ok=0;
+  const cs=countries(),st=$('trendStatus');st.textContent='Loading '+cs.length+' countries...';
+  const apps=new Map(),words=new Map(),genres=new Map();let ok=0;
   await Promise.all(cs.map(async cc=>{
     try{
-      const list=await getChart(cc);
-      ok++;
+      const list=await getChart(cc);ok++;
       list.forEach((a,i)=>{
         const e=apps.get(a.id)||{id:a.id,name:a.name,artist:a.artistName,genre:(a.genres&&a.genres[0]&&a.genres[0].name)||'',url:a.url,pts:0,ranks:{}};
         e.pts+=51-(i+1);e.ranks[cc]=i+1;apps.set(a.id,e);
+        if(e.genre)genres.set(e.genre,(genres.get(e.genre)||0)+(51-(i+1)));
         const seen=new Set();
         (a.name.toLowerCase().match(/[\p{L}\p{N}]{3,}/gu)||[]).forEach(w=>{
           if(STOP.has(w)||seen.has(w))return;seen.add(w);
-          const k=words.get(w)||{w,pts:0,n:0,cs:new Set()};k.pts+=51-(i+1);k.n++;k.cs.add(cc);words.set(w,k);
+          const k=words.get(w)||{w,pts:0,n:0};k.pts+=51-(i+1);k.n++;words.set(w,k);
         });
       });
     }catch(e){}
   }));
-  st.textContent=ok?`Loaded ${ok} of ${cs.length} countries.`:'Could not load the charts. Details: '+(errs.slice(-3).join(' | ')||'unknown');
-  errs.length=0;
-  if(!ok)return;
-  const wl=[...words.values()].filter(x=>x.n>1).sort((a,b)=>b.pts-a.pts).slice(0,25);
-  const mx=wl[0]?wl[0].pts:1;
-  $('kwTable').innerHTML='<tr><th>Keyword</th><th>Apps</th><th>Countries</th><th>Strength</th></tr>'+wl.map(x=>
-    `<tr><td><a href="#" data-kw="${esc(x.w)}">${esc(x.w)}</a></td><td>${x.n}</td><td>${x.cs.size}</td><td><div class="bar"><i style="width:${Math.round(x.pts/mx*100)}%"></i></div></td></tr>`).join('');
-  $('kwCloud').hidden=false;
+  if(!ok){st.textContent='Could not load the charts. Details: '+(errs.slice(-3).join(' | ')||'unknown');errs.length=0;return}
+  errs.length=0;st.textContent=`Loaded ${ok} of ${cs.length} countries.`;
+  $('genres').innerHTML='';
+  [...genres.entries()].sort((a,b)=>b[1]-a[1]).slice(0,8).forEach(([g])=>{const s=document.createElement('span');s.className='chip';s.textContent=g;$('genres').appendChild(s)});
+  $('hotWords').innerHTML='';
+  [...words.values()].filter(x=>x.n>1).sort((a,b)=>b.pts-a.pts).slice(0,24).forEach(x=>{
+    const b=document.createElement('button');b.className='chip';b.textContent=x.w;b.onclick=()=>{$('kwInput').value=x.w;runTest()};$('hotWords').appendChild(b)});
   const al=[...apps.values()].sort((a,b)=>b.pts-a.pts).slice(0,40);
-  lastRows=al.map((a,i)=>({rank:i+1,app:a.name,developer:a.artist,genre:a.genre,countries:Object.keys(a.ranks).join(' '),score:a.pts}));lastKind='trends';
-  $('appsTable').innerHTML='<tr><th>#</th><th>App</th><th>Genre</th><th>Countries</th><th>Best rank</th></tr>'+al.map((a,i)=>
-    `<tr><td>${i+1}</td><td class="wrap"><a href="${esc(a.url)}" target="_blank" rel="noopener">${esc(a.name)}</a><div class="note">${esc(a.artist)}</div></td><td>${esc(a.genre)}</td><td>${Object.keys(a.ranks).length}</td><td>${Math.min(...Object.values(a.ranks))}</td></tr>`).join('');
-  $('appsCard').hidden=false;
+  $('appsTable').innerHTML='<tr><th>#</th><th>App</th><th>Genre</th><th>Countries</th></tr>'+al.map((a,i)=>
+    `<tr><td>${i+1}</td><td class="wrap"><a href="${esc(a.url)}" target="_blank" rel="noopener">${esc(a.name)}</a><div class="note">${esc(a.artist)}</div></td><td>${esc(a.genre)}</td><td>${Object.keys(a.ranks).length}</td></tr>`).join('');
+  $('hotBox').hidden=false;
 };
-document.addEventListener('click',e=>{
-  const a=e.target.closest('[data-kw]');if(!a)return;e.preventDefault();
-  $('kwInput').value=a.dataset.kw;
-  document.querySelector('#tabs [data-tab=kw]').click();$('runKw').click();
-});
+
 const med=a=>{if(!a.length)return 0;const s=[...a].sort((x,y)=>x-y),m=s.length>>1;return s.length%2?s[m]:(s[m-1]+s[m])/2};
-$('runKw').onclick=async()=>{
+const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
+async function runTest(){
   const q=$('kwInput').value.trim();if(!q)return;
   const cs=countries(),st=$('kwStatus');st.textContent='Checking '+cs.length+' countries...';
-  const rows=[],all=new Map();
+  const rows=[],all=new Map(),now=Date.now();
   await Promise.all(cs.map(async cc=>{
     try{
       const d=await getJSON(`https://itunes.apple.com/search?term=${encodeURIComponent(q)}&country=${cc}&entity=software&limit=25`);
-      const r=d.results.slice(0,10);
-      const counts=r.map(x=>x.userRatingCount||0);
-      const m=med(counts), weak=counts.filter(c=>c<500).length;
-      const comp=Math.min(100,Math.max(0,(Math.log10(m+1)/5.5)*100));
-      const opp=Math.round(100-comp);
-      rows.push({cc,found:d.resultCount,median:m,weak,opp});
-      r.forEach(x=>{const e=all.get(x.trackId)||{n:x.trackName,a:x.artistName,u:x.trackViewUrl,rc:x.userRatingCount||0,rt:x.averageUserRating||0,cs:[]};e.cs.push(cc);all.set(x.trackId,e)});
+      const r=d.results.slice(0,10);if(!r.length)return;
+      const counts=r.map(x=>x.userRatingCount||0),m=med(counts);
+      const weak=counts.filter(c=>c<500).length;
+      const lowStar=r.filter(x=>(x.userRatingCount||0)>=50&&(x.averageUserRating||0)<4).length;
+      const stale=r.filter(x=>x.currentVersionReleaseDate&&(now-new Date(x.currentVersionReleaseDate))>365*864e5).length;
+      const opp=100-clamp(Math.log10(m+1)/5.5*100,0,100);
+      const score=Math.round(clamp(.5*opp+.2*(weak/r.length*100)+.15*(lowStar/r.length*100)+.15*(stale/r.length*100),0,100));
+      rows.push({cc,n:r.length,median:m,weak,lowStar,stale,score});
+      r.forEach(x=>{const e=all.get(x.trackId)||{n:x.trackName,a:x.artistName,u:x.trackViewUrl,rc:x.userRatingCount||0,rt:x.averageUserRating||0,up:x.currentVersionReleaseDate||'',cs:[]};e.cs.push(cc);all.set(x.trackId,e)});
     }catch(e){}
   }));
-  if(!rows.length){st.textContent='No data. Check your connection.';return}
+  if(!rows.length){st.textContent='No data. Check your connection or try different words.';return}
   st.textContent='';
-  rows.sort((a,b)=>b.opp-a.opp);
-  lastRows=rows.map(r=>({keyword:q,country:name(r.cc),results:r.found,median_ratings_top10:r.median,weak_competitors_top10:r.weak,opportunity:r.opp}));lastKind='kw';
-  $('kwRes').innerHTML='<tr><th>Country</th><th>Median ratings (top 10)</th><th>Weak rivals</th><th>Opportunity</th></tr>'+rows.map(r=>
-    `<tr><td>${esc(name(r.cc))}</td><td>${r.median.toLocaleString()}</td><td>${r.weak} / 10</td><td><span class="pill ${r.opp>=50?'hi':'lo'}">${r.opp}</span></td></tr>`).join('');
-  $('kwResult').hidden=false;
-  const al=[...all.values()].sort((a,b)=>b.cs.length-a.cs.length||b.rc-a.rc).slice(0,15);
-  $('kwAppsT').innerHTML='<tr><th>App</th><th>Ratings</th><th>Stars</th><th>Countries</th></tr>'+al.map(x=>
-    `<tr><td class="wrap"><a href="${esc(x.u)}" target="_blank" rel="noopener">${esc(x.n)}</a><div class="note">${esc(x.a)}</div></td><td>${x.rc.toLocaleString()}</td><td>${x.rt.toFixed(1)}</td><td>${x.cs.length}</td></tr>`).join('');
-  $('kwApps').hidden=false;
+  rows.sort((a,b)=>b.score-a.score);
+  const avg=k=>rows.reduce((s,r)=>s+r[k],0)/rows.length;
+  const score=Math.round(avg('score'));
+  const verdict=score>=60?'go':score>=40?'maybe':'stop';
+  const rivals=[...all.values()].sort((a,b)=>b.cs.length-a.cs.length||b.rc-a.rc).slice(0,12);
+  const lines=[
+    `Typical top-10 app has about ${Math.round(avg('median')).toLocaleString()} ratings (lower means easier to break in).`,
+    `${avg('weak').toFixed(1)} of 10 rivals have under 500 ratings.`,
+    `${avg('lowStar').toFixed(1)} of 10 rivals are rated below 4.0 stars, so users are not fully happy.`,
+    `${avg('stale').toFixed(1)} of 10 rivals have not been updated in a year.`
+  ];
+  cur={kw:q,score,verdict,countries:rows.map(r=>cname(r.cc)),lines,rivals:rivals.slice(0,5).map(x=>({n:x.n,rc:x.rc,rt:x.rt,up:x.up})),ts:Date.now()};
+  const label={go:'Worth building',maybe:'Possible, needs a sharper angle',stop:'Crowded, pick another angle'}[verdict];
+  $('verdict').className='verdict '+verdict;
+  $('verdict').innerHTML=`<span class="sc">${score}</span><div class="big">${label}</div><div style="font-size:13px">"${esc(q)}" in ${esc(cur.countries.join(', '))}</div><ul>${lines.map(l=>'<li>'+esc(l)+'</li>').join('')}</ul>`;
+  $('kwRes').innerHTML='<tr><th>Country</th><th>Median ratings</th><th>Weak rivals</th><th>Score</th></tr>'+rows.map(r=>
+    `<tr><td>${esc(cname(r.cc))}</td><td>${r.median.toLocaleString()}</td><td>${r.weak} / ${r.n}</td><td><div class="bar"><i style="width:${r.score}%"></i></div></td></tr>`).join('');
+  $('kwAppsT').innerHTML='<tr><th>App</th><th>Ratings</th><th>Stars</th><th>Last update</th></tr>'+rivals.map(x=>
+    `<tr><td class="wrap"><a href="${esc(x.u)}" target="_blank" rel="noopener">${esc(x.n)}</a><div class="note">${esc(x.a)}</div></td><td>${x.rc.toLocaleString()}</td><td>${x.rt?x.rt.toFixed(1):'-'}</td><td>${x.up?esc(x.up.slice(0,7)):'-'}</td></tr>`).join('');
+  $('playLink').href=`https://play.google.com/store/search?q=${encodeURIComponent(q)}&c=apps&gl=${countries()[0].toLowerCase()}`;
+  $('resultBox').hidden=false;$('promptBox').hidden=true;
+  $('resultBox').scrollIntoView({behavior:'smooth',block:'start'});
+}
+$('runKw').onclick=runTest;
+$('kwInput').addEventListener('keydown',e=>{if(e.key==='Enter')runTest()});
+
+function buildPrompt(it){
+  const name=$('appName').value.trim()||(it.kw.replace(/\b\w/g,c=>c.toUpperCase()));
+  const lang=$('lang').value,money=$('money').value;
+  const langTxt=lang==='ar'?'Arabic only, full right-to-left layout':lang==='both'?'Arabic and English with a language switch, RTL support':'English';
+  const moneyTxt={ads:'free with a small, non-intrusive ad slot',paid:'a one-time purchase after a useful free trial',sub:'a free tier plus a monthly subscription for premium features'}[money];
+  const riv=it.rivals.map(r=>`- ${r.n} (${r.rc.toLocaleString()} ratings, ${r.rt?r.rt.toFixed(1):'n/a'} stars, last updated ${r.up?r.up.slice(0,7):'unknown'})`).join('\n');
+  return `I want to build and sell a mobile app using vibe coding. Please help me from idea to finished product.
+
+IDEA: "${name}" (search keyword: "${it.kw}")
+TARGET MARKET: ${it.countries.join(', ')}
+LANGUAGE: ${langTxt}
+MONETIZATION: ${moneyTxt}
+
+MARKET RESEARCH (from App Store data):
+- Opportunity score ${it.score}/100.
+${it.lines.map(l=>'- '+l).join('\n')}
+Top competitors:
+${riv}
+
+WHAT I WANT YOU TO DO:
+1. First, suggest 3 ways to make my app clearly better than these competitors, based on their weak points (low stars, old updates, missing features). Wait for me to choose one.
+2. Then build it as a single-file HTML app, mobile-first, installable on a phone home screen, working offline, saving data in the browser, with light and dark mode and a polished first-run screen.
+3. After the app works, write the App Store listing: title (30 characters), subtitle, keyword field (100 characters) using "${it.kw}" and related search terms in ${lang==='en'?'English':'Arabic and English'}, and a short description.
+4. Give me a simple plan to publish it and to get the first 100 users in ${it.countries.slice(0,3).join(', ')}.`;
+}
+function showPrompt(it){
+  cur=it;$('appName').value=$('appName').dataset.kw===it.kw?$('appName').value:'';$('appName').dataset.kw=it.kw;
+  refreshPrompt();$('promptBox').hidden=false;$('promptBox').scrollIntoView({behavior:'smooth',block:'start'});
+}
+function refreshPrompt(){
+  if(!cur)return;const p=buildPrompt(cur);$('promptText').value=p;
+  $('openClaude').href='https://claude.ai/new?q='+encodeURIComponent(p);$('copyStatus').textContent='';
+}
+['appName','lang','money'].forEach(i=>$(i).addEventListener('input',refreshPrompt));
+$('toPrompt').onclick=()=>showPrompt(cur);
+$('copyPrompt').onclick=async()=>{
+  const ta=$('promptText');
+  try{await navigator.clipboard.writeText(ta.value);$('copyStatus').textContent='Copied. Paste it into a new Claude chat.'}
+  catch(e){ta.removeAttribute('readonly');ta.select();ta.setSelectionRange(0,99999);try{document.execCommand('copy');$('copyStatus').textContent='Copied. Paste it into a new Claude chat.'}catch(_){$('copyStatus').textContent='Press and hold the text to copy it.'}ta.setAttribute('readonly','')}
 };
-const IDEAS=['prayer times','quran','kids learning','learn arabic','budget tracker','habit tracker','fasting timer','meal planner','pdf scanner','qr code','photo editor','ai chat','study planner','expense split','workout log','invoice maker','translator','kids coloring','math games','sleep sounds'];
-IDEAS.forEach(w=>{const b=document.createElement('button');b.className='chip';b.textContent=w;b.onclick=()=>{$('kwInput').value=w;$('runKw').click()};$('ideas').appendChild(b)});
-$('kwInput').addEventListener('keydown',e=>{if(e.key==='Enter')$('runKw').click()});
-$('playLink').onclick=()=>{
-  const q=$('kwInput').value.trim()||'apps';
-  const cs=countries();const hl='en',gl=cs[0].toLowerCase();
-  window.open(`https://play.google.com/store/search?q=${encodeURIComponent(q)}&c=apps&hl=${hl}&gl=${gl}`,'_blank');
+
+function drawList(){
+  const box=$('shortlist');
+  if(!shortlist.length){box.innerHTML='<p class="note" style="margin:0">Nothing saved yet. Test an idea, then tap Save to shortlist.</p>';return}
+  box.innerHTML='';
+  shortlist.forEach((it,i)=>{
+    const d=document.createElement('div');d.className='sl';
+    d.innerHTML=`<div><b>${esc(it.kw)}</b> <span class="pill ${it.verdict}">${it.score}</span><div class="note">${esc(it.countries.slice(0,3).join(', '))}${it.countries.length>3?' +'+(it.countries.length-3):''}</div></div><div class="row"><button class="alt" data-b="${i}">Build prompt</button><button class="alt" data-r="${i}">Remove</button></div>`;
+    box.appendChild(d);
+  });
+}
+$('shortlist').addEventListener('click',e=>{
+  const b=e.target.closest('[data-b]'),r=e.target.closest('[data-r]');
+  if(b)showPrompt(shortlist[+b.dataset.b]);
+  if(r){shortlist.splice(+r.dataset.r,1);store.set('shortlist',shortlist);drawList()}
+});
+$('saveIdea').onclick=()=>{
+  if(!cur)return;shortlist=shortlist.filter(x=>x.kw!==cur.kw);shortlist.unshift(cur);shortlist=shortlist.slice(0,30);
+  store.set('shortlist',shortlist);drawList();$('saveIdea').textContent='Saved';setTimeout(()=>$('saveIdea').textContent='Save to shortlist',1500);
 };
+drawList();
 $('csvBtn').onclick=()=>{
-  if(!lastRows.length){alert('Run a search first.');return}
-  const k=Object.keys(lastRows[0]);
-  const csv=[k.join(',')].concat(lastRows.map(r=>k.map(x=>'"'+String(r[x]).replace(/"/g,'""')+'"').join(','))).join('\n');
-  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='app-'+lastKind+'.csv';a.click();
+  if(!shortlist.length)return;
+  const q=s=>'"'+String(s).replace(/"/g,'""')+'"';
+  const csv=['keyword,score,verdict,countries,top_rivals'].concat(shortlist.map(it=>[q(it.kw),it.score,it.verdict,q(it.countries.join(' / ')),q(it.rivals.map(r=>r.n).join(' / '))].join(','))).join('\n');
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='app-ideas.csv';a.click();
 };
 </script>
 </body>
